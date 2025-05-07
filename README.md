@@ -1,4 +1,4 @@
-# Bot Informasi Cuaca BMKG
+# Pencarian dan Eksplor Data Cuaca BMKG
 
 Aplikasi web sederhana yang menyajikan informasi cuaca berdasarkan data dari BMKG. Dibangun menggunakan Python (Flask) dan dilengkapi dengan antarmuka pengguna berbasis HTML/CSS.
 
