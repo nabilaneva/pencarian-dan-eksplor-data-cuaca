@@ -1,0 +1,95 @@
+/* Gaya dasar untuk body */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+  line-height: 1.6;
+  padding: 20px;
+}
+
+/* Container utama untuk konten */
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Judul halaman */
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Gaya untuk input form */
+label {
+  font-weight: bold;
+  color: #444;
+}
+
+input[type="text"],
+input[type="date"] {
+  width: 96.5%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Tombol submit */
+button {
+  width: 100%;
+  padding: 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #218838;
+}
+
+/* Gaya untuk hasil pencarian */
+.result {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #28a745;
+  background-color: #d4edda;
+  border-radius: 4px;
+}
+
+/* Gaya untuk pesan flash dengan kotak merah dan tombol tutup */
+.flash {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.flash button {
+  background: none;
+  border: none;
+  color: #721c24;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  position: absolute; /* Mengubah posisi tombol */
+  top: 5px;
+  right: 10px; /* Posisikan di pojok kanan atas */
+}
+
+.flash button:hover {
+  color: #f5c6cb;
+}

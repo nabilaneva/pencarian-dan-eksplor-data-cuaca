@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pencarian dan Ekspor Data Cuaca</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* CSS yang sudah ada */
+      select,
+      input[type="date"] {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+
+      .secondary-button {
+        margin-top: 10px;
+        display: block;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .result-container {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+
+      .result {
+        border: 1px solid green;
+        padding: 15px;
+        background-color: #e0f4e0;
+        width: 250px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Pencarian dan Ekspor Data Cuaca</h1>
+
+      <!-- Menampilkan pesan peringatan jika ada pesan yang dikirim dari server -->
+      {% with messages = get_flashed_messages() %} {% if messages %}
+      <div class="flash">
+        <span>{{ messages[0] }}</span>
+        <button onclick="this.parentElement.style.display='none';">
+          &times;
+        </button>
+      </div>
+      {% endif %} {% endwith %}
+
+      <form action="/" method="POST">
+        <div class="form-group">
+          <label for="tanggal">Tanggal:</label>
+          <input type="date" id="tanggal" name="tanggal" required />
+        </div>
+
+        <div class="form-group">
+          <label for="kota">Kota:</label>
+          <select id="kota" name="kota" required>
+            <option value="">Pilih Kota</option>
+            {% for kota in daftar_kota %}
+            <option value="{{ kota }}">{{ kota }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="kecamatan">Kecamatan:</label>
+          <select id="kecamatan" name="kecamatan" required>
+            <option value="">Pilih Kecamatan</option>
+          </select>
+        </div>
+
+        <button type="submit" class="primary-button">
+          {% if data_sudah_ditemukan %} Tambahkan Data {% else %} Cari Data {%
+          endif %}
+        </button>
+      </form>
+
+      <!-- Hasil Pencarian -->
+      <div class="result-container">
+        {% for weather_data in data_cuaca_terdahulu %}
+        <div class="result" data-id="{{ weather_data['ID'] }}">
+          <h2>Data Cuaca</h2>
+          <p><strong>Tanggal:</strong> {{ weather_data['Tanggal'] }}</p>
+          <p><strong>ID:</strong> {{ weather_data['ID'] }}</p>
+          <p><strong>Kota:</strong> {{ weather_data['Kota'] }}</p>
+          <p><strong>Kecamatan:</strong> {{ weather_data['Kecamatan'] }}</p>
+
+          <button type="button" class="delete-button secondary-button">
+            Hapus Pencarian
+          </button>
+
+          <div class="export-buttons">
+            <form action="/export" method="POST">
+              {% for key, value in weather_data.items() %}
+              <input type="hidden" name="{{ key }}" value="{{ value }}" />
+              {% endfor %}
+              <button type="submit" class="secondary-button">
+                Ekspor ke Word
+              </button>
+            </form>
+
+            <form action="/export/pdf" method="POST">
+              {% for key, value in weather_data.items() %}
+              <input type="hidden" name="{{ key }}" value="{{ value }}" />
+              {% endfor %}
+              <button type="submit" class="secondary-button">
+                Ekspor ke PDF
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if data_cuaca_terdahulu %}
+      <div class="action-buttons">
+        <!-- Tombol Hapus Seluruh Pencarian (Diletakkan di bawah) -->
+        <form action="/delete_all_searches" method="POST">
+          <button
+            type="button"
+            id="delete_all_searches"
+            class="secondary-button"
+          >
+            Hapus Seluruh Pencarian
+          </button>
+        </form>
+
+        <!-- Tombol Ekspor Seluruh Laporan -->
+        <form action="/export_all_word" method="GET">
+          <button type="button" id="export_all_word" class="secondary-button">
+            Ekspor Seluruh Laporan ke Word
+          </button>
+        </form>
+
+        <form action="/export_all_pdf" method="GET">
+          <button type="button" id="export_all_pdf" class="secondary-button">
+            Ekspor Seluruh Laporan ke PDF
+          </button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        // Inisialisasi Select2 untuk kota dan kecamatan
+        $("#kota").select2({
+          placeholder: "Pilih Kota",
+          allowClear: true,
+        });
+
+        $("#kecamatan").select2({
+          placeholder: "Pilih Kecamatan",
+          allowClear: true,
+        });
+
+        // AJAX untuk mendapatkan kecamatan berdasarkan kota yang dipilih
+        $("#kota").change(function () {
+          var kota = $(this).val();
+          if (kota) {
+            $.ajax({
+              url: "/get_kecamatan/" + kota,
+              type: "GET",
+              success: function (data) {
+                $("#kecamatan")
+                  .empty()
+                  .append('<option value="">Pilih Kecamatan</option>');
+                $.each(data.kecamatan, function (index, kecamatan) {
+                  $("#kecamatan").append(
+                    '<option value="' +
+                      kecamatan +
+                      '">' +
+                      kecamatan +
+                      "</option>"
+                  );
+                });
+                // Re-initialize Select2 setelah data baru dimasukkan
+                $("#kecamatan").trigger("change");
+              },
+              error: function () {
+                alert("Gagal mendapatkan data kecamatan.");
+              },
+            });
+          } else {
+            $("#kecamatan")
+              .empty()
+              .append('<option value="">Pilih Kecamatan</option>');
+          }
+        });
+
+        // AJAX untuk menghapus hasil pencarian per-item
+        $(".delete-button").click(function () {
+          var resultElement = $(this).closest(".result");
+          var searchId = resultElement.data("id");
+
+          $.ajax({
+            url: "/delete_search",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ search_id: searchId }),
+            success: function (response) {
+              if (response.success) {
+                // Hapus elemen hasil pencarian dari tampilan
+                resultElement.remove();
+              } else {
+                alert("Gagal menghapus pencarian.");
+              }
+            },
+            error: function () {
+              alert("Terjadi kesalahan saat menghapus pencarian.");
+            },
+          });
+        });
+
+        // AJAX untuk menghapus seluruh hasil pencarian
+        $("#delete_all_searches").click(function () {
+          $.ajax({
+            url: "/delete_all_searches",
+            type: "POST",
+            success: function (response) {
+              if (response.success) {
+                // Kosongkan seluruh hasil pencarian
+                $(".result-container").empty();
+              } else {
+                alert("Gagal menghapus seluruh pencarian.");
+              }
+            },
+            error: function () {
+              alert("Terjadi kesalahan saat menghapus seluruh pencarian.");
+            },
+          });
+        });
+
+        $(document).ready(function () {
+          // Aksi untuk mengekspor seluruh laporan ke Word
+          $("#export_all_word").click(function () {
+            window.location.href = "/export_all_word";
+          });
+
+          // Aksi untuk mengekspor seluruh laporan ke PDF
+          $("#export_all_pdf").click(function () {
+            window.location.href = "/export_all_pdf";
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
