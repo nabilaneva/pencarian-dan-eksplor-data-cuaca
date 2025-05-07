@@ -54,3 +54,7 @@ Pastikan file `vercel.json` telah dikonfigurasi dengan benar untuk deployment. I
 ## Lisensi
 
 Proyek ini bersifat open-source dan dilisensikan di bawah MIT License.
+
+# pencarian-dan-eksplor-data-cuaca
+
+> > > > > > > b1198fbfb9f0c097b41836d3208a5b3701b6ebe2
